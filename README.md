@@ -51,6 +51,30 @@ index.tmpl
 
 Check out the [tests](https://github.com/dannyvankooten/extemplate/blob/master/template_test.go) and [examples directory](https://github.com/dannyvankooten/extemplate/tree/master/examples) for more examples.
 
+### Gin integration
+
+This package can be used with [gin-gonic](https://github.com/gin-gonic/gin) as its template render.
+
+```go
+
+// default router
+r := gin.Default()
+
+// custom template renderer
+xt := extemplate.New()
+
+// insert here template functions (if you have any)
+xt.Funcs(template.FuncMap{
+	"noescape":   noescape,
+})
+
+// parse template dir
+xt.ParseDir("template", []string{".tmpl"})
+
+// set template render
+r.HTMLRender = xt
+```
+
 ### Benchmarks
 
 You will most likely never have to worry about performance, when using this package properly. 
