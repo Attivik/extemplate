@@ -156,7 +156,7 @@ func findTemplateFiles(root string, extensions []string) (map[string]*templatefi
 	var exts = map[string]bool{}
 
 	// ensure root has trailing slash
-	root = strings.TrimSuffix(root, "/") + "/"
+	root = strings.TrimSuffix(root, "\\/") + string(os.PathSeparator)
 
 	// create map of allowed extensions
 	for _, e := range extensions {
@@ -177,6 +177,11 @@ func findTemplateFiles(root string, extensions []string) (map[string]*templatefi
 		}
 
 		name := strings.TrimPrefix(path, root)
+
+		// convert Windows' path separator to UNIX format
+		if string(os.PathSeparator) == "\\" {
+			name = strings.ReplaceAll(name, "\\", "/")
+		}
 
 		// read file into memory
 		contents, err := ioutil.ReadFile(path)
