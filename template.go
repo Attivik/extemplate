@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/gin-gonic/gin/render"
 )
 
 var extendsRegex *regexp.Regexp
@@ -232,4 +234,18 @@ func newTemplateFile(c []byte) (*templatefile, error) {
 	}
 
 	return tf, nil
+}
+
+// Instance implements gin's HTML render interface
+func (x *Extemplate) Instance(name string, data interface{}) render.Render {
+	tmpl := x.Lookup(name)
+	if tmpl == nil {
+		panic("extemplate: no template named " + name)
+	}
+
+	return render.HTML{
+		Template: tmpl,
+		Name:     name,
+		Data:     data,
+	}
 }
