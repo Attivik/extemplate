@@ -81,11 +81,6 @@ func (x *Extemplate) Funcs(funcMap template.FuncMap) *Extemplate {
 // Lookup returns the template with the given name
 // It returns nil if there is no such template or the template has no definition.
 func (x *Extemplate) Lookup(name string) *template.Template {
-	if x.autoreload {
-		if err := x.ParseDir(x.templateRoot, x.templateExtensions); err != nil {
-			panic(err)
-		}
-	}
 	if t, ok := x.templates[name]; ok {
 		return t
 	}
@@ -95,6 +90,12 @@ func (x *Extemplate) Lookup(name string) *template.Template {
 
 // ExecuteTemplate applies the template named name to the specified data object and writes the output to wr.
 func (x *Extemplate) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
+	if x.autoreload {
+		if err := x.ParseDir(x.templateRoot, x.templateExtensions); err != nil {
+			panic(err)
+		}
+	}
+
 	tmpl := x.Lookup(name)
 	if tmpl == nil {
 		return fmt.Errorf("extemplate: no template %q", name)
@@ -254,6 +255,12 @@ func newTemplateFile(c []byte) (*templatefile, error) {
 
 // Instance implements gin's HTML render interface
 func (x *Extemplate) Instance(name string, data interface{}) render.Render {
+	if x.autoreload {
+		if err := x.ParseDir(x.templateRoot, x.templateExtensions); err != nil {
+			panic(err)
+		}
+	}
+
 	tmpl := x.Lookup(name)
 	if tmpl == nil {
 		panic("extemplate: no template named " + name)
