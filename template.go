@@ -23,8 +23,11 @@ var extendsRegex *regexp.Regexp
 // Extemplate holds a reference to all templates
 // and shared configuration like Delims or FuncMap
 type Extemplate struct {
-	shared    *template.Template
-	templates map[string]*template.Template
+	shared             *template.Template
+	templates          map[string]*template.Template
+	templateRoot       string
+	templateExtensions []string
+	autoreload         bool
 }
 
 type templatefile struct {
@@ -47,6 +50,11 @@ func New() *Extemplate {
 		shared:    shared,
 		templates: make(map[string]*template.Template),
 	}
+}
+
+// Autoreload enable autoreload features on template Lookup
+func (x *Extemplate) Autoreload(autoreload bool) {
+	x.autoreload = autoreload
 }
 
 // Delims sets the action delimiters to the specified strings,
@@ -73,6 +81,11 @@ func (x *Extemplate) Funcs(funcMap template.FuncMap) *Extemplate {
 // Lookup returns the template with the given name
 // It returns nil if there is no such template or the template has no definition.
 func (x *Extemplate) Lookup(name string) *template.Template {
+	if x.autoreload {
+		if err := x.ParseDir(x.templateRoot, x.templateExtensions); err != nil {
+			panic(err)
+		}
+	}
 	if t, ok := x.templates[name]; ok {
 		return t
 	}
@@ -97,6 +110,9 @@ func (x *Extemplate) ExecuteTemplate(wr io.Writer, name string, data interface{}
 func (x *Extemplate) ParseDir(root string, extensions []string) error {
 	var b []byte
 	var err error
+
+	x.templateRoot = root
+	x.templateExtensions = extensions
 
 	files, err := findTemplateFiles(root, extensions)
 	if err != nil {
